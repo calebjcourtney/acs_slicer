@@ -116,38 +116,48 @@ geographyOptions = [
 year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2018)]
 
 # this is the layout of the app, as dash defines it. it's basically a bunch of html
-app.layout = html.Div([
-    html.Div([
-        html.Label('ACS year (5-year Survey)'),
-        dcc.Dropdown(
-            id = 'acs-year',
-            options = year_options,
-            value = '2017'
+app.layout = html.Div(
+    [
+        html.Div(
+            [
+                html.Label('ACS year (5-year Survey)'),
+                dcc.Dropdown(
+                    id = 'acs-year',
+                    options = year_options,
+                    value = '2017'
+                ),
+                html.Label('ACS Concept'),
+                dcc.Dropdown(
+                    id = 'acs-concept',
+                    options = [],
+                    value= 'B01001',
+                ),
+                html.Label('ACS Variable'),
+                dcc.Dropdown(
+                    id = 'acs-variable',
+                    value = 'B01001_001E',
+                    multi = True
+                ),
+                html.Label('Geography Level'),
+                dcc.Dropdown(
+                    id = 'region-level',
+                    value = 'us',
+                    options = geographyOptions
+                )
+            ]
         ),
-        html.Label('ACS Concept'),
-        dcc.Dropdown(
-            id = 'acs-concept',
-            options = [],
-            value= 'B01001',
+        html.Div(),
+        dcc.Markdown("### Data Results\n*Please note that data from Puerto Rico is included in national totals."),
+        html.Div(id = 'acs-table'),
+        dcc.Markdown('###  '),
+        html.A(
+            html.Button('Download Data'),
+            id = 'download-link',
+            download="rawdata.csv",
+            target="_blank"
         ),
-        html.Label('ACS Variable'),
-        dcc.Dropdown(id = 'acs-variable', value='B01001_001E', multi=True),
-        html.Label('Geography Level'),
-        dcc.Dropdown(id = 'region-level', value = 'us', options = geographyOptions)
-    ]
-    ),
-    html.Div(),
-    dcc.Markdown("### Data Results\n*Please note that data from Puerto Rico is included in national totals."),
-    html.Div(id = 'acs-table'),
-    dcc.Markdown('###  '),
-    html.A(
-        html.Button('Download Data'),
-        id = 'download-link',
-        download="rawdata.csv",
-        target="_blank"
-    ),
-    html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
-],
+        html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+    ],
     className='container'
 )
 
@@ -284,4 +294,4 @@ def update_download_link(data_rows, column_order):
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 # Loading screen CSS
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
-app.run_server(debug=False)
+app.run_server(debug=True)
