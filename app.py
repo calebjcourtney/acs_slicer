@@ -1,6 +1,5 @@
 """
 Simple interface for downloading ACS data from the Census API,
-primarily for internal customers working on consulting projects.
 
 Created by Caleb Courtney
 """
@@ -82,216 +81,216 @@ def get_acs_table(acsVariable, regionLevel, concept, year):
     return df
 
 
-# dash is really just flask under-the-hood with some helpful interface elements for javascript
-server = flask.Flask(__name__)
-app = dash.Dash(__name__, server=server)
-app.config['suppress_callback_exceptions'] = True
+def main():
+    # dash is really just flask under-the-hood with some helpful interface elements for javascript
+    server = flask.Flask(__name__)
+    app = dash.Dash(__name__, server=server)
+    app.config['suppress_callback_exceptions'] = True
 
-# these are currently the only geography options that are supported
-# adding other geog options is possible, but architecturally difficult
-geographyOptions = [
-    {
-        'label': 'United States',
-        'value': 'us'
-    },
-    {
-        'label': 'State',
-        'value': 'state'
-    },
-    {
-        'label': 'Metro/Micro-politan Area',
-        'value': 'metropolitan%20statistical%20area/micropolitan%20statistical%20area'
-    },
-    {
-        'label': 'County',
-        'value': 'county'
-    },
-    {
-        'label': 'ZIP',
-        'value': 'zip%20code%20tabulation%20area'
-    }
-]
-
-# this will need to be update every year when the new 5-year ACS data comes out
-year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2018)]
-
-# this is the layout of the app, as dash defines it. it's basically a bunch of html
-app.layout = html.Div(
-    [
-        html.Div(
-            [
-                html.Label('ACS year (5-year Survey)'),
-                dcc.Dropdown(
-                    id = 'acs-year',
-                    options = year_options,
-                    value = '2017'
-                ),
-                html.Label('ACS Concept'),
-                dcc.Dropdown(
-                    id = 'acs-concept',
-                    options = [],
-                    value= 'B01001',
-                ),
-                html.Label('ACS Variable'),
-                dcc.Dropdown(
-                    id = 'acs-variable',
-                    value = 'B01001_001E',
-                    multi = True
-                ),
-                html.Label('Geography Level'),
-                dcc.Dropdown(
-                    id = 'region-level',
-                    value = 'us',
-                    options = geographyOptions
-                )
-            ]
-        ),
-        html.Div(),
-        dcc.Markdown("### Data Results\n*Please note that data from Puerto Rico is included in national totals."),
-        html.Div(id = 'acs-table'),
-        dcc.Markdown('###  '),
-        html.A(
-            html.Button('Download Data'),
-            id = 'download-link',
-            download="rawdata.csv",
-            target="_blank"
-        ),
-        html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
-    ],
-    className='container'
-)
-
-
-@app.callback(
-    dash.dependencies.Output('acs-concept', 'options'),
-    [
-        dash.dependencies.Input('acs-year', 'value')
+    # these are currently the only geography options that are supported
+    # adding other geog options is possible, but architecturally difficult
+    geographyOptions = [
+        {
+            'label': 'United States',
+            'value': 'us'
+        },
+        {
+            'label': 'State',
+            'value': 'state'
+        },
+        {
+            'label': 'Metro/Micro-politan Area',
+            'value': 'metropolitan%20statistical%20area/micropolitan%20statistical%20area'
+        },
+        {
+            'label': 'County',
+            'value': 'county'
+        },
+        {
+            'label': 'ZIP',
+            'value': 'zip%20code%20tabulation%20area'
+        }
     ]
-)
-def set_concept_options(year):
-    """Given an input year by the user, we look for what ACS Groups are availabl.
 
-    Args:
-        year (str): The year chosen by the user, in string format
+    # this will need to be update every year when the new 5-year ACS data comes out
+    year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2018)]
 
-    Returns:
-        list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
-    """
-    groups_url = 'https://api.census.gov/data/%s/acs/acs5/groups.json' % year
-    groups_data = requests.get(groups_url).json()['groups']
-    concepts = []
-    for group in groups_data:
-        concepts.append(
-            {
-                'label': group['description'].lower().title(),
-                'value': group['name']
-            }
-        )
+    # this is the layout of the app, as dash defines it. it's basically a bunch of html
+    app.layout = html.Div(
+        [
+            html.Div(
+                [
+                    html.Label('ACS year (5-year Survey)'),
+                    dcc.Dropdown(
+                        id = 'acs-year',
+                        options = year_options,
+                        value = '2017'
+                    ),
+                    html.Label('ACS Concept'),
+                    dcc.Dropdown(
+                        id = 'acs-concept',
+                        options = [],
+                        value= 'B01001',
+                    ),
+                    html.Label('ACS Variable'),
+                    dcc.Dropdown(
+                        id = 'acs-variable',
+                        value = 'B01001_001E',
+                        multi = True
+                    ),
+                    html.Label('Geography Level'),
+                    dcc.Dropdown(
+                        id = 'region-level',
+                        value = 'us',
+                        options = geographyOptions
+                    )
+                ]
+            ),
+            html.Div(),
+            dcc.Markdown("### Data Results\n*Please note that data from Puerto Rico is included in national totals."),
+            html.Div(id = 'acs-table'),
+            dcc.Markdown('###  '),
+            html.A(
+                html.Button('Download Data'),
+                id = 'download-link',
+                download="rawdata.csv",
+                target="_blank"
+            ),
+            html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+        ],
+        className='container'
+    )
 
-    return concepts
+    @app.callback(
+        dash.dependencies.Output('acs-concept', 'options'),
+        [
+            dash.dependencies.Input('acs-year', 'value')
+        ]
+    )
+    def set_concept_options(year):
+        """Given an input year by the user, we look for what ACS Groups are availabl.
 
+        Args:
+            year (str): The year chosen by the user, in string format
 
-@app.callback(
-    dash.dependencies.Output('acs-variable', 'options'),
-    [
-        dash.dependencies.Input('acs-concept', 'value'),
-        dash.dependencies.Input('acs-year', 'value')
-    ]
-)
-def set_variables_options(selected_concept, year):
-    """given an ACS year and group, this returns a list of the variable options within that group for that year
-
-    Args:
-        selected_concept (str): the ACS group chosen by the user
-        year (str): the year chosen by the user
-
-    Returns:
-        list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
-    """
-    variable_url = 'https://api.census.gov/data/%s/acs/acs5/groups/%s.json' % (year, selected_concept)
-    variables_data = requests.get(variable_url).json()['variables']
-    variables = []
-    for key, value in variables_data.items():
-        if key[-1] == 'E':
-            label = value['label'].replace('Estimate!!', '')
-            label = label.replace('!!', ': ')
-            variables.append(
+        Returns:
+            list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
+        """
+        groups_url = 'https://api.census.gov/data/%s/acs/acs5/groups.json' % year
+        groups_data = requests.get(groups_url).json()['groups']
+        concepts = []
+        for group in groups_data:
+            concepts.append(
                 {
-                    'label': label,
-                    'value': key
+                    'label': group['description'].lower().title(),
+                    'value': group['name']
                 }
             )
 
-    return variables
+        return concepts
 
-
-@app.callback(
-    dash.dependencies.Output('acs-table', 'children'),
-    [
-        dash.dependencies.Input('acs-variable', 'value'),
-        dash.dependencies.Input('acs-concept', 'value'),
-        dash.dependencies.Input('region-level', 'value'),
-        dash.dependencies.Input('acs-year', 'value')
-    ]
-)
-def get_table(acs_variable, acs_concept, region_level, year):
-    """Handles the inputs from the user, and returns the data as a datatable
-
-    Args:
-        acs_variable (str): ACS variable chosen by the user for what data they want downloaded
-        acs_concept (str): ACS group that the variable belongs to (used for renaming columns)
-        region_level (str): ACS region definition that the user wants data for
-        year (str): Year of ACS data user wants
-
-    Returns:
-        list: a list with one item in it - a dt.DataTable. This is dash's way of making a datatable easier on the eyes.
-    """
-    if type(acs_variable) == str:
-        acs_variable = [acs_variable]
-
-    acsColumns = ','.join(acs_variable)
-    df = get_acs_table(acsColumns, region_level, acs_concept, year)
-
-    table = dt.DataTable(
-        rows=df.to_dict('records'),
-        columns = list(df.columns),
-        row_selectable=False,
-        filterable=True,
-        sortable=True,
-        editable = False,
-        selected_row_indices=[],
-        id='acs-full-datatable'
+    @app.callback(
+        dash.dependencies.Output('acs-variable', 'options'),
+        [
+            dash.dependencies.Input('acs-concept', 'value'),
+            dash.dependencies.Input('acs-year', 'value')
+        ]
     )
+    def set_variables_options(selected_concept, year):
+        """given an ACS year and group, this returns a list of the variable options within that group for that year
 
-    return [table]
+        Args:
+            selected_concept (str): the ACS group chosen by the user
+            year (str): the year chosen by the user
+
+        Returns:
+            list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
+        """
+        variable_url = 'https://api.census.gov/data/%s/acs/acs5/groups/%s.json' % (year, selected_concept)
+        variables_data = requests.get(variable_url).json()['variables']
+        variables = []
+        for key, value in variables_data.items():
+            if key[-1] == 'E':
+                label = value['label'].replace('Estimate!!', '')
+                label = label.replace('!!', ': ')
+                variables.append(
+                    {
+                        'label': label,
+                        'value': key
+                    }
+                )
+
+        return variables
+
+    @app.callback(
+        dash.dependencies.Output('acs-table', 'children'),
+        [
+            dash.dependencies.Input('acs-variable', 'value'),
+            dash.dependencies.Input('acs-concept', 'value'),
+            dash.dependencies.Input('region-level', 'value'),
+            dash.dependencies.Input('acs-year', 'value')
+        ]
+    )
+    def get_table(acs_variable, acs_concept, region_level, year):
+        """Handles the inputs from the user, and returns the data as a datatable
+
+        Args:
+            acs_variable (str): ACS variable chosen by the user for what data they want downloaded
+            acs_concept (str): ACS group that the variable belongs to (used for renaming columns)
+            region_level (str): ACS region definition that the user wants data for
+            year (str): Year of ACS data user wants
+
+        Returns:
+            list: a list with one item in it - a dt.DataTable. This is dash's way of making a datatable easier on the eyes.
+        """
+        if type(acs_variable) == str:
+            acs_variable = [acs_variable]
+
+        acsColumns = ','.join(acs_variable)
+        df = get_acs_table(acsColumns, region_level, acs_concept, year)
+
+        table = dt.DataTable(
+            rows=df.to_dict('records'),
+            columns = list(df.columns),
+            row_selectable=False,
+            filterable=True,
+            sortable=True,
+            editable = False,
+            selected_row_indices=[],
+            id='acs-full-datatable'
+        )
+
+        return [table]
+
+    @app.callback(
+        dash.dependencies.Output('download-link', 'href'),
+        [
+            dash.dependencies.Input('acs-full-datatable', 'rows'),
+            dash.dependencies.Input('acs-full-datatable', 'columns'),
+        ]
+    )
+    def update_download_link(data_rows, column_order):
+        """Handles the downloading of the data that the user wants
+
+        Args:
+            data_rows (list): a list of the rows and columns in the input table
+            column_order (list): list of the column names and the order they should be in. if you don't have this, then the output data will be in a different order every time
+
+        Returns:
+            str: A url string output for the button to download the data
+        """
+        df = pd.DataFrame(data_rows)
+        df = df[column_order]
+        csv_string = df.to_csv(index=False, encoding='utf-8')
+        csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
+        return csv_string
+
+    # Dash CSS
+    app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
+    # Loading screen CSS
+    app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
+    app.run_server(debug=True)
 
 
-@app.callback(
-    dash.dependencies.Output('download-link', 'href'),
-    [
-        dash.dependencies.Input('acs-full-datatable', 'rows'),
-        dash.dependencies.Input('acs-full-datatable', 'columns'),
-    ]
-)
-def update_download_link(data_rows, column_order):
-    """Handles the downloading of the data that the user wants
-
-    Args:
-        data_rows (list): a list of the rows and columns in the input table
-        column_order (list): list of the column names and the order they should be in. if you don't have this, then the output data will be in a different order every time
-
-    Returns:
-        str: A url string output for the button to download the data
-    """
-    df = pd.DataFrame(data_rows)
-    df = df[column_order]
-    csv_string = df.to_csv(index=False, encoding='utf-8')
-    csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
-    return csv_string
-
-
-# Dash CSS
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
-# Loading screen CSS
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
-app.run_server(debug=True)
+if __name__ == '__main__':
+    main()
