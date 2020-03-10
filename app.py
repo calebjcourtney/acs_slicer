@@ -292,4 +292,5 @@ def update_download_link(data_rows, column_order):
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 # Loading screen CSS
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
-app.run_server(debug=True)
+
+
