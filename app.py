@@ -123,7 +123,7 @@ app.layout = html.Div(
                 dcc.Dropdown(
                     id = 'acs-year',
                     options = year_options,
-                    value = '2017'
+                    value = '2018'
                 ),
                 html.Label('ACS Concept'),
                 dcc.Dropdown(
