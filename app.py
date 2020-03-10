@@ -112,7 +112,7 @@ geographyOptions = [
 ]
 
 # this will need to be update every year when the new 5-year ACS data comes out
-year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2018)]
+year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2019)]
 
 # this is the layout of the app, as dash defines it. it's basically a bunch of html
 app.layout = html.Div(
