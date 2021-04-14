@@ -1,6 +1,5 @@
 """
 Simple interface for downloading ACS data from the Census API,
-
 Created by Caleb Courtney
 """
 # built-in libraries
@@ -20,13 +19,11 @@ import dash_table_experiments as dt
 
 def get_acs_table(acsVariable, regionLevel, concept, year):
     """Downloads the specific table from the ACS API
-
     Args:
         acsVariable (str): Comma-separated string of the acs datasets
         regionLevel (str): ACS region type to use (us, state, county, etc)
         concept (str): The ACS Group (aka concept) selected by the user. used for renaming columns to friendly output
         year (str): string
-
     Returns:
         pandas.DataFrame: pd Dataframe of properly formatted data
     """
@@ -169,10 +166,8 @@ app.layout = html.Div(
 )
 def set_concept_options(year):
     """Given an input year by the user, we look for what ACS Groups are availabl.
-
     Args:
         year (str): The year chosen by the user, in string format
-
     Returns:
         list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
     """
@@ -199,11 +194,9 @@ def set_concept_options(year):
 )
 def set_variables_options(selected_concept, year):
     """given an ACS year and group, this returns a list of the variable options within that group for that year
-
     Args:
         selected_concept (str): the ACS group chosen by the user
         year (str): the year chosen by the user
-
     Returns:
         list: returns a list of dict options with 'label' and 'value' as keys. see how `year_options` is formatted above
     """
@@ -235,13 +228,11 @@ def set_variables_options(selected_concept, year):
 )
 def get_table(acs_variable, acs_concept, region_level, year):
     """Handles the inputs from the user, and returns the data as a datatable
-
     Args:
         acs_variable (str): ACS variable chosen by the user for what data they want downloaded
         acs_concept (str): ACS group that the variable belongs to (used for renaming columns)
         region_level (str): ACS region definition that the user wants data for
         year (str): Year of ACS data user wants
-
     Returns:
         list: a list with one item in it - a dt.DataTable. This is dash's way of making a datatable easier on the eyes.
     """
@@ -274,11 +265,9 @@ def get_table(acs_variable, acs_concept, region_level, year):
 )
 def update_download_link(data_rows, column_order):
     """Handles the downloading of the data that the user wants
-
     Args:
         data_rows (list): a list of the rows and columns in the input table
         column_order (list): list of the column names and the order they should be in. if you don't have this, then the output data will be in a different order every time
-
     Returns:
         str: A url string output for the button to download the data
     """
@@ -292,5 +281,3 @@ def update_download_link(data_rows, column_order):
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
 # Loading screen CSS
 app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
-
-
