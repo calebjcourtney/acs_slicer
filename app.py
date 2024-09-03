@@ -11,10 +11,11 @@ import flask
 import requests
 
 # plotly-specific external libraries
+import dash_ag_grid as dag
 import dash
-import dash_html_components as html
-import dash_core_components as dcc
-import dash_table_experiments as dt
+from dash import html
+from dash import dcc
+from dash import dash_table as dt
 
 
 def get_acs_table(acsVariable, regionLevel, concept, year):
@@ -80,7 +81,14 @@ def get_acs_table(acsVariable, regionLevel, concept, year):
 
 # dash is really just flask under-the-hood with some helpful interface elements for javascript
 server = flask.Flask(__name__)
-app = dash.Dash(__name__, server=server)
+app = dash.Dash(
+    __name__,
+    server=server,
+    external_stylesheets=[
+        "https://codepen.io/chriddyp/pen/bWLwgP.css",
+        "https://codepen.io/chriddyp/pen/brPBPO.css",
+    ],
+)
 app.config['suppress_callback_exceptions'] = True
 
 # these are currently the only geography options that are supported
@@ -109,7 +117,7 @@ geographyOptions = [
 ]
 
 # this will need to be update every year when the new 5-year ACS data comes out
-year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2019)]
+year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2023)]
 
 # this is the layout of the app, as dash defines it. it's basically a bunch of html
 app.layout = html.Div(
@@ -120,7 +128,7 @@ app.layout = html.Div(
                 dcc.Dropdown(
                     id = 'acs-year',
                     options = year_options,
-                    value = '2018'
+                    value = '2022'
                 ),
                 html.Label('ACS Concept'),
                 dcc.Dropdown(
@@ -146,13 +154,7 @@ app.layout = html.Div(
         dcc.Markdown("### Data Results\n*Please note that data from Puerto Rico is included in national totals."),
         html.Div(id = 'acs-table'),
         dcc.Markdown('###  '),
-        html.A(
-            html.Button('Download Data'),
-            id = 'download-link',
-            download="rawdata.csv",
-            target="_blank"
-        ),
-        html.Div(dt.DataTable(rows=[{}]), style={'display': 'none'})
+        html.Button("Download CSV", id="csv-button", n_clicks=0),
     ],
     className='container'
 )
@@ -242,42 +244,24 @@ def get_table(acs_variable, acs_concept, region_level, year):
     acsColumns = ','.join(acs_variable)
     df = get_acs_table(acsColumns, region_level, acs_concept, year)
 
-    table = dt.DataTable(
-        rows=df.to_dict('records'),
-        columns = list(df.columns),
-        row_selectable=False,
-        filterable=True,
-        sortable=True,
-        editable = False,
-        selected_row_indices=[],
-        id='acs-full-datatable'
+    table = dag.AgGrid(
+        id="acs-full-datatable",
+        columnSize="sizeToFit",
+        columnDefs=[{"field": name} for name in df.columns],
+        rowData=df.to_dict("records"),
+        csvExportParams={
+            "fileName": "acs_data.csv",
+        },
     )
 
     return [table]
 
 
 @app.callback(
-    dash.dependencies.Output('download-link', 'href'),
-    [
-        dash.dependencies.Input('acs-full-datatable', 'rows'),
-        dash.dependencies.Input('acs-full-datatable', 'columns'),
-    ]
+    dash.dependencies.Output("acs-full-datatable", "exportDataAsCsv"),
+    dash.dependencies.Input("csv-button", "n_clicks"),
 )
-def update_download_link(data_rows, column_order):
-    """Handles the downloading of the data that the user wants
-    Args:
-        data_rows (list): a list of the rows and columns in the input table
-        column_order (list): list of the column names and the order they should be in. if you don't have this, then the output data will be in a different order every time
-    Returns:
-        str: A url string output for the button to download the data
-    """
-    df = pd.DataFrame(data_rows)
-    df = df[column_order]
-    csv_string = df.to_csv(index=False, encoding='utf-8')
-    csv_string = "data:text/csv;charset=utf-8," + urllib.parse.quote(csv_string)
-    return csv_string
-
-# Dash CSS
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/bWLwgP.css"})
-# Loading screen CSS
-app.css.append_css({"external_url": "https://codepen.io/chriddyp/pen/brPBPO.css"})
+def export_data_as_csv(n_clicks):
+    if n_clicks:
+        return True
+    return False
