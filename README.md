@@ -1,10 +1,10 @@
 # ACS Slicer
-Basic slicer for accessing American Community Survey data. Uses the [Plot.ly Dash](https://dash.plot.ly/) library for the visualization.
+Basic slicer for accessing American Community Survey data.
+Uses the [Plot.ly Dash](https://dash.plot.ly/) library for the visualization.
+Uses poetry as a dependency manager.
 
 # Run
 ```
-virtualenv -p python3 venv
-source venv/bin/activate
-pip install -r requirements.txt
-python app.py
+poetry install
+poetry run flask run
 ```
