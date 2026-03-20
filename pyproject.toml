@@ -13,8 +13,6 @@ dash = "^2.17.1"
 requests = "^2.32.4"
 dash-ag-grid = "^31.2.0"
 
-[tool.poetry.dev-dependencies]
-
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
