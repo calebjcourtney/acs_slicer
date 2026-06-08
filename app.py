@@ -28,7 +28,7 @@ def get_acs_table(acsVariable, regionLevel, concept, year):
     Returns:
         pandas.DataFrame: pd Dataframe of properly formatted data
     """
-    censusKey = ''
+    censusKey = '' # you will need to fill this in
     # build the url
     url = 'https://api.census.gov/data/%s/acs/acs5?get=NAME,%s&for=%s:*&key=%s' % (year, acsVariable, regionLevel, censusKey)
     # get the data
@@ -41,7 +41,7 @@ def get_acs_table(acsVariable, regionLevel, concept, year):
     # we need to define the column order, so it's easier for the user to read
     # first the region column comes first
     column_order = []
-    for column in ['us', 'state', 'county', 'metropolitan statistical area/micropolitan statistical area', 'zip code tabulation area']:
+    for column in ['us', 'state', 'county', 'metropolitan statistical area/micropolitan statistical area', 'zip code tabulation area', 'place']:
         if column in df.columns:
             column_order.append(column)
 
@@ -113,11 +113,15 @@ geographyOptions = [
     {
         'label': 'ZIP',
         'value': 'zip%20code%20tabulation%20area'
+    },
+    {
+        'label': 'place',
+        'value': 'place'
     }
 ]
 
 # this will need to be update every year when the new 5-year ACS data comes out
-year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2024)]
+year_options = [{'label': str(x), 'value': str(x)} for x in range(2010, 2025)]
 
 # this is the layout of the app, as dash defines it. it's basically a bunch of html
 app.layout = html.Div(
@@ -128,7 +132,7 @@ app.layout = html.Div(
                 dcc.Dropdown(
                     id = 'acs-year',
                     options = year_options,
-                    value = '2023'
+                    value = '2024'
                 ),
                 html.Label('ACS Concept'),
                 dcc.Dropdown(
