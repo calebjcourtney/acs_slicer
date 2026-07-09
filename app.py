@@ -4,6 +4,7 @@ Created by Caleb Courtney
 """
 # built-in libraries
 import urllib.parse
+import os
 
 # external libraries
 import pandas as pd
@@ -28,7 +29,8 @@ def get_acs_table(acsVariable, regionLevel, concept, year):
     Returns:
         pandas.DataFrame: pd Dataframe of properly formatted data
     """
-    censusKey = '' # you will need to fill this in
+    # you will need to fill this in or define in environment variables
+    censusKey = os.environ.get('CENSUS_API_KEY', '')
     # build the url
     url = 'https://api.census.gov/data/%s/acs/acs5?get=NAME,%s&for=%s:*&key=%s' % (year, acsVariable, regionLevel, censusKey)
     # get the data
